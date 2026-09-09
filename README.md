@@ -62,9 +62,9 @@ iptables -A FORWARD -j ts-forward
 
 What this rule essentially does is, when a packet arrives at the subnet router, or exit node, it is evaluated in the FORWARD chain since traffic is to be routed to this device before being sent out to either another device on the network or over the internet. If there is a DROP policy, it will be dropped since the default policy is DROP. Since we added this rule to our iptables it will forward this packet to the chain ts-forward, created by tailscale, and allow this packet, if the packet matches the tailscale forwarding rule.  
 
-## ☑️Troubleshooting
+## *** ☑️Troubleshooting ***
 
-## Tailscale - wasn't authenticating
+### Tailscale - wasn't authenticating
 
 There was an issue where tailscale couldn't authenticate, and it would remain offline. It was unable to authenticate because the Linux machine had the incorrect time, which causes issues for the HTTPS/TLS handshake. In order to fix this, I needed to either disable the expiry or enable NTP on the Linux machine in order to correctly receive the correct time. So i used chronyd, but i ran into an issue with iptables. I had to allow the NTP(Network time protocol) port and another port for NTS(Network_Time_security). 
 
@@ -88,7 +88,7 @@ iptables -A OUTPUT -p tcp -m tcp --dport 4460 -m comment --comment "Allow port f
 
 [Photos of a failing NTP server - and how fixing it fixed the issue]
 
-##🌐 Internet connectivity issues when using an exit node - troubleshooting via tcpdump & journalctl
+### 🌐 Internet connectivity issues when using an exit node - troubleshooting via tcpdump & journalctl
 
 If you have an exit node on your tailnet and you aren't able to get to the internet. Check to make sure ipv4 forwarding is enabled and that your firewalls forwarding chain is accepting traffic from the ts-forward chain.  
 
