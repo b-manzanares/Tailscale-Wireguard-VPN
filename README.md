@@ -118,6 +118,8 @@ example@example:~$ sudo iptables -A FORWARD -m limit --limit 5/min -j LOG --log-
 You can then use `journalctl` to check what is being dropped. Here, traffic arrives from the remote computer through the `tailscale0` interface, but gets caught by the logging rule and dropped:
 
 ```bash
+#journalctl will show the packets that were logged before being dropped. 
+
 example@example:~$ sudo journalctl -k -g "FORWARDING-DROP: " --since "1 hour ago" | grep DST=203.0.113.8
 Sep 04 20:19:46 example kernel: FORWARDING-DROP: IN=tailscale0 OUT=enp128s31f6 MAC= SRC=100.X.X.X DST=203.0.113.8 LEN=60 TOS=0x00 PREC=0x00 TTL=127 ID=40333 PROTO=ICMP TYPE=8 CODE=0 ID=1 SEQ=386
 Sep 04 20:19:47 example kernel: FORWARDING-DROP: IN=tailscale0 OUT=enp128s31f6 MAC= SRC=100.X.X.X DST=203.0.113.8 LEN=60 TOS=0x00 PREC=0x00 TTL=127 ID=40334 PROTO=ICMP TYPE=8 CODE=0 ID=1 SEQ=387
@@ -129,6 +131,8 @@ Sep 04 20:20:38 example kernel: FORWARDING-DROP: IN=tailscale0 OUT=enp128s31f6 M
 Here is the `tcpdump` before allowing the rule, showing zero packets sent to `203.0.113.8` because they were blocked by the forwarding rule:
 
 ```bash
+#Tcpdump performed for a specific source and protocol
+
 example@example:~$ sudo tcpdump -n -i enp128s31f6 icmp and src host 203.0.113.8
 tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
 listening on enp128s31f6, link-type EN10MB (Ethernet), snapshot length 262144 bytes
