@@ -86,7 +86,8 @@ apt install chrony
 
 The firewall was blocking the port needed for connections to the NTP (123) server. I enabled the NTP port in the `/etc/nftables.conf` file under the output chain, allowing me to connect, receive accurate time, and fix the authentication issues.
 
-```
+```bash
+# NTP configuration
 udp dport 123 accept
 
 ```
@@ -94,6 +95,8 @@ udp dport 123 accept
 **Iptables config**
 
 ```bash
+# iptables configuration
+
 iptables -A OUTPUT -p udp -m udp --dport 123 -j ACCEPT
 iptables -A OUTPUT -p tcp -m tcp --dport 4460 -m comment --comment "Allow port for (NTS) Network Time Security" -j ACCEPT
 
