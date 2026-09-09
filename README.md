@@ -1,7 +1,5 @@
 # Tailscale-Wireguard-VPN
 
-# Tailscale-setup
-
 ## 🎯 Objective
 
 Issue: I was scheduled to travel for work, but I needed a secure and simple way of remotely accessing resources on a home network. I did not want a VPN where I was required to open ports on my router or experience high latency.  
