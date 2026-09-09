@@ -52,7 +52,7 @@ We must then approve these routes in the tailscale admin console.
 
 Now we can communicate with devices on the home network, that are unable to install tailscale. We have created a safe, secure, and effective way of communicating with our remote devices without the need of opening ports on the home gateway, causing a security risk. 
 
-### Iptables - Allowing traffic for tailscale
+### 🔥🧱 Iptables - Allowing traffic for tailscale
 
 If you have a default policy DROP in your Linux host-based firewall iptables forward chain, you will need to add the following rule to allow this node to act as a exit node. 
 
@@ -88,7 +88,7 @@ iptables -A OUTPUT -p tcp -m tcp --dport 4460 -m comment --comment "Allow port f
 
 [Photos of a failing NTP server - and how fixing it fixed the issue]
 
-### Internet connectivity issues when using an exit node - troubleshooting via tcpdump & journalctl
+###🌐 Internet connectivity issues when using an exit node - troubleshooting via tcpdump & journalctl
 
 If you have an exit node on your tailnet and you aren't able to get to the internet. Check to make sure ipv4 forwarding is enabled and that your firewalls forwarding chain is accepting traffic from the ts-forward chain.  
 
