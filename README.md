@@ -60,14 +60,16 @@ Now we can communicate with devices on the home network that are unable to insta
 
 ### Iptables - Allowing Traffic for Tailscale
 
-If your Linux host-based firewall has a default `DROP` policy on the `FORWARD` chain, you will need to add the following rule to allow this node to act as an exit node:
+An exit node acts essentially as a router, passing all traffic to this device so that data from a remote device remains encrypted through the Tailscale tunnel before exiting the network. This is essential when using insecure guest Wi-Fi, since all traffic is encrypted before being sent to your secure network acting as the exit node. 
+
+Enabling this feature isn't enough if your Linux host-based firewall has a default DROP policy on the FORWARD chain. You will need to add the following rule to allow this node to act as an exit node:
 
 ```bash
 iptables -A FORWARD -j ts-forward
 
 ```
 
-When a packet arrives at the subnet router or exit node, it is evaluated in the `FORWARD` chain since traffic is routed through this device before being sent out to another network device or the internet. If there is a `DROP` policy, it will be discarded. Because we added this rule to our iptables, it forwards the packet to the `ts-forward` chain created by Tailscale and permits it if the packet matches Tailscale's forwarding rules.
+When a packet arrives at the subnet router or exit node, it is evaluated in the `FORWARD` chain since traffic is routed through this device before being sent out to another device on the network or the internet. If there is a `DROP` policy, it will be discarded. Because we added this rule to our iptables, it forwards the packet to the `ts-forward` chain created by Tailscale and permits it if the packet matches Tailscale's forwarding rules.
 
 ## ☑️ Troubleshooting
 
@@ -97,13 +99,11 @@ iptables -A OUTPUT -p tcp -m tcp --dport 4460 -m comment --comment "Allow port f
 
 ```
 
-[Photos of a failing NTP server - and how fixing it resolved the issue]
-
 ### Internet Connectivity Issues When Using an Exit Node (Troubleshooting via tcpdump & journalctl)
 
 If you have an exit node on your tailnet and cannot reach the internet, verify that IPv4 forwarding is enabled and that your firewall's forwarding chain accepts traffic from the `ts-forward` chain.
 
-I used `tcpdump` on the exit node to check if packets were being sent from a remote device. Because SNAT is used, the device should use its private IP address (`192.0.2.200`) to send packets to `203.0.113.1`. When `ts-forward` isn't included in the forwarding section, traffic is blocked by the firewall's default policy.
+I used `tcpdump` on the exit node to check if packets were being sent from a remote device. Because SNAT is used, the device should use its private IP address (`192.0.2.200`) to send packets to `203.0.113.1`. When `ts-forward` isn't included in the forwarding section, traffic is blocked by the firewall's forwarding DROP policy.
 
 If no traffic is generated for that destination address, you can use a logging rule in your iptables to see traffic logged before it is dropped. If you are familiar with Cisco devices, a default policy `DROP` acts as an implicit deny in an ACL, checking everything in the list before ending with a drop. In this case, a line was added to the iptables forward section to catch blocked packets for logging purposes:
 
@@ -112,7 +112,7 @@ example@example:~$ sudo iptables -A FORWARD -m limit --limit 5/min -j LOG --log-
 
 ```
 
-You can use `journalctl` to check what is being dropped. Here, traffic arrives from the remote computer through the `tailscale0` interface, but gets caught by the logging rule and dropped:
+You can then use `journalctl` to check what is being dropped. Here, traffic arrives from the remote computer through the `tailscale0` interface, but gets caught by the logging rule and dropped:
 
 ```bash
 example@example:~$ sudo journalctl -k -g "FORWARDING-DROP: " --since "1 hour ago" | grep DST=203.0.113.8
@@ -135,7 +135,7 @@ listening on enp128s31f6, link-type EN10MB (Ethernet), snapshot length 262144 by
 
 ```
 
-Here is the `tcpdump` after the `ts-forward` chain has been added. The correct private IP is now used for the ICMP echo request instead of the Tailscale (`100.X.X.X`) IP address:
+Here is the `tcpdump` after the `ts-forward` chain has been added. The correct private IP is now used for the ICMP echo request instead of the Tailscale (`100.X.X.X`) IP address that we saw in the dropped packets that were logged:
 
 ```bash
 example@example:~$ sudo tcpdump -n -i enp128s31f6 icmp and dst host 203.0.113.8
